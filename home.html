@@ -16,11 +16,11 @@
         </form>
         <button id="submit_name" type="button">Start Chatting!</button>
     </div>
-    <div id="create_message">
-        <form>
-            <input id="message" type="text" placeholder="Please enter your name" disabled>
+    <div>
+        <form id="create_message">
+            <input id="message" type="text" placeholder="Start Typing" disabled>
         </form>
-        <button id="send_message" type="button" disabled>Send</button>
+        <button id="send_message" type="button" form="" disabled>Send</button>
     </div>
 
     <script>
@@ -28,7 +28,7 @@
             var username = "";
             var connection = $("#connection_status");
             var messages = $("#messages_container");
-            var name_input = $('#set_name');
+            var name_input = $('#username');
             var message_input = $("#message");
             var send = $("#send_message");
             var ws = new WebSocket("ws://" + location.hostname + ":80");
@@ -36,28 +36,50 @@
             message_input.prop("disabled", true);
             send.prop("disabled", true);
             
+            $(document).keypress(function (e) {
+                var key = e.which;
+                if (key == 13) {
+                    send.click();
+                    return false;  
+                }
+            });
+            
+            $('#username').focus(function() {
+                $(this).val('');
+            });
+            
             $("#submit_name").click(function() {
                 message_input.prop("disabled", false);
                 send.prop("disabled", false);
-                username = name_input.value();
-                name_input.remove();
+                username = name_input.val();
+                $("#set_name").remove();
+                message_input.focus();
             });
             
             send.click(function() {
-                ws.send(message_input.value())
+            	if (message_input.val()) {
+                    ws.send(`{
+                        "user" : "${username}",
+                        "message": "${message_input.val()}"
+                    }`);
+                    message_input.val("");
+                }
             });
             
             ws.onopen = function () {
-                connection.innerHTML = "Connected!";
+                connection.html("Connected!");
+                connection.css("background-color", "green");
             };
             
             ws.onclose = function() {
-                connection.innerHTML = "Disconnected! Please Reload This Page...";
-                connection.css("background-color","red");
+                connection.html("Disconnected! Please Reload This Page...");
+                connection.css("background-color", "red");
             };
 
             ws.onmessage = function (evt) {
-                messages.append(evt.data);
+            	messages.append(evt.data);
+            	message = $.parseJSON(evt.data);
+                messages.append(`<p>${message["user"]}</p>${message["message"]}</p>`);
             };
         });
     </script>
