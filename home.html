@@ -1,1 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Client</title>
+    <link rel="stylesheet" href="test.css">
+</head>
+<body>
 
+<script>
+    window.onload = function (ev) {
+        var ws = new WebSocket("ws://" + location.hostname + ":80");
+
+        ws.onopen = function () {
+            ws.send("Hello");
+        };
+
+        ws.onmessage = function (evt) {
+            document.getElementById("response").innerHTML = evt.data;
+        };
+    };
+</script>
+</body>
+</html>
